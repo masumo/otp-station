@@ -9,115 +9,93 @@ import Imap from 'imap';
 import * as mailParser from 'mailparser';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
+import MyImap from '../../../utils/my-imap';
+import { parse } from 'path';
+const logger = require('pino')({
+  transport: {
+      target: 'pino-pretty',
+      options: {
+          translateTime: false,
+          colorize: true,
+          ignore: 'pid,hostname,time',
+      },
+  },
+});
 dotenv.config();
 
 let OTPcodes: (string | null)[] = [];
 
-async function checkEmails(){
-  
-  const promises: any[] = [];
-  let gmailImap = new Imap({
-    user: process.env.NEXT_PUBLIC_GMAIL_USER?? "",
-    password: process.env.NEXT_PUBLIC_APP_PASSWORD?? "",
-    host: "imap.gmail.com", //this may differ if you are using some other mail services like yahoo
-    port: 993,
-    tls: true,
-    connTimeout: 10000, // Default by node-imap 
-    authTimeout: 5000, // Default by node-imap, 
-    debug: console.log, // Or your custom function with only one incoming argument. Default: null 
-    tlsOptions: { rejectUnauthorized: false }
-  });
+async function run() {
+    const config = {
+        imap: {
+            user: process.env.NEXT_PUBLIC_YMAIL_USER,
+            password: process.env.NEXT_PUBLIC_YMAIL_PASSWORD,
+            host: process.env.NEXT_PUBLIC_YMAIL_HOST,
+            port: process.env.NEXT_PUBLIC_EMAIL_PORT,
+            tls: process.env.NEXT_PUBLIC_EMAIL_TLS,
+        },
+        debug: logger.info.bind(logger),
+    };
 
-  function openInbox(cb: { (err: any, box: any): void; (error: Error, mailbox: Imap.Box): void; }) {
-    gmailImap.openBox('INBOX', false, cb);
-  }
+    const imap = new MyImap(config);
+    const result = await imap.connect();
+    logger.info(`result: ${result}`);
+    const boxName = await imap.openBox();
+    logger.info(`boxName: ${boxName}`);
 
-  function getOTP(parsedText: any){
-    let otpKeyPhrase = "Steam login credentials:";
-    let otpKeyPhrase_B = "Guard code you need to access your account:";
-    const otpLength = 5; //panjang "FC6JB"
-    //console.log(parsedText);
-    let pos = parsedText.indexOf(otpKeyPhrase);
-    if(pos!=-1){ //jika otpKeyPhrase ditemukan
-      pos = pos + otpKeyPhrase.length + 6; // 6 adalah jumlah spaces (termasuk newline) antara otpKeyPhrase dengan kode_OTP   
-    }else if(pos==-1){ //jika otpKeyPhrase tidak ditemukan, cari otpKeyPhrase_B
-      pos = parsedText.indexOf(otpKeyPhrase_B);
-      pos = pos + otpKeyPhrase_B.length + 6;
+    const criteria = [];
+    //criteria.push('UNSEEN');
+    //criteria.push(['SINCE', moment().format('MMMM DD, YYYY')]);
+    criteria.push(['HEADER', 'SUBJECT', 'Steam Account']);
+    
+    const emails = await imap.fetchEmails(criteria);
+    for (let email of emails){
+        let otp = parseOTP(email);
+        console.log(otp);
+        OTPcodes.push(otp);
     }
-    //console.log("POSITION "+pos);
-    let otp = parsedText.substring(pos, pos + otpLength);
-    return otp;
-  }
 
-  gmailImap.once('ready', function () {
-    openInbox(function (err: any, _box: any) {
-      if (err) throw err;
-      gmailImap.search(['SEEN', ['SUBJECT', 'Steam Account']], function (err: any, results: any) {
-        if (err) throw err;
-        var f = gmailImap.fetch(results, { bodies: '', markSeen: true });
-        f.on('message', (msg: { on: (arg0: string, arg1: (stream: any) => void) => void; once: (arg0: string, arg1: { (attrs: any): void; (): void; }) => void; }) => {
-          msg.on('body', (stream: any) => {
-              
-            mailParser.simpleParser(stream, async (_err: any, parsed) => {
-              //const {from, subject, textAsHtml, text} = parsed;
-              //console.log("EMAIL judul "+parsed);
-              let otp: string | null = null;
-              otp = getOTP(parsed.text);
-              console.log("OTP "+ otp);              
-              //OTPcodes.push(otp);
-              promises.push(otp);
-  
-              //console.log(JSON.stringify(parsed));
-              /* Make API call to save the data
-                 Save the retrieved data into a database.
-                 E.t.c
-              */
-             //console.log(err);
-            });
-            
-          });
-         
-          msg.once('end', function () {
-            //console.log(prefix + 'Finished');
-          });
-        });
-        f.once('error', function (err: string) {
-          console.log('Fetch error: ' + err);
-        });
-        f.once('end', function () {
-          console.log('Done fetching all messages!');
-          gmailImap.end();
-        });
-      });
-    });
-  });
-  
-  
-  
-  gmailImap.once('error', function (err: any) {
-    console.log(err);
-  });
-  
-  gmailImap.once('end', function () {
-    console.log('Connection ended');
-  });
-  
-  gmailImap.connect(); 
+    logger.info(emails);
 
-  
-  
-  OTPcodes = await Promise.all(promises);
-  console.log("ARRAY "+ JSON.stringify(OTPcodes));
-
-  //return OTPcodes;
+    for (const email of emails) {
+        for (const file of email.files) {
+            const lines = Buffer.from(file.buffer).toString().split('\n');
+            logger.info(lines, `filename: ${file.originalname}`);
+        }
+        logger.info(email.body.split('\n'), 'body:');
+    }
+    await imap.end();
 }
 
-async function getOTPcodes(){
-  await checkEmails();
+function parseOTP(email: any) {
+  let otpKeyPhrase = "Steam login credentials:";
+  let otpKeyPhrase_B = "Guard code you need to access your account:";
+  const otpLength = 5; //panjang "FC6JB"
+  //console.log(parsedText);
+  let pos = email.body.indexOf(otpKeyPhrase);
+  if(pos!=-1){ //jika otpKeyPhrase ditemukan
+    pos = pos + otpKeyPhrase.length + 6; // 6 adalah jumlah spaces (termasuk newline) antara otpKeyPhrase dengan kode_OTP   
+  }else if(pos==-1){ //jika otpKeyPhrase tidak ditemukan, cari otpKeyPhrase_B
+    pos = email.body.indexOf(otpKeyPhrase_B);
+    pos = pos + otpKeyPhrase_B.length + 6;
+  }
+  //console.log("POSITION "+pos);
+  let otp = email.body.substring(pos, pos + otpLength);
+  return otp;
+}
+
+async function parseEmails(){
+    run().then(() => {
+        process.exit();
+    }).catch((error) => {
+        logger.error(error);
+        process.exit(1);
+    });
+}
+
+function getOTPcodes(){
   return OTPcodes;
 }
-
-
 
 const appRouter = router({
   greeting: publicProcedure
@@ -137,7 +115,13 @@ const appRouter = router({
     }),
   // 💡 Tip: Try adding a new procedure here and see if you can use it in the client!
    getUser: publicProcedure.query(async () => {
-    return await getOTPcodes();
+    /*let output = parseEmails().then(() => {
+      getOTPcodes();
+    });
+    */
+    await parseEmails();
+    let output = getOTPcodes();
+    return output;
   }),
 });
 
@@ -150,3 +134,4 @@ export default trpcNext.createNextApiHandler({
   router: appRouter,
   createContext: () => ({}),
 });
+
