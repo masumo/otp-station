@@ -50,8 +50,8 @@ async function run() {
     
     const emails = await imap.fetchEmails(criteria);
     for (let email of emails){
-        let otp = parseOTP(email);
-        console.log(otp);
+        let otp = matchOTP(email);
+        console.log("OTP "+otp);
         OTPcodes.push(otp);
     }
 
@@ -65,6 +65,12 @@ async function run() {
         logger.info(email.body.split('\n'), 'body:');
     }
     await imap.end();
+}
+
+function matchOTP(email: any){
+  let text = email.body;
+  let match = text.match("\\b[a-zA-z]*[0-9]+[a-zA-z0-9]*\\b");
+  return match && match[0];
 }
 
 function parseOTP(email: any) {
