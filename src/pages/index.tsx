@@ -6,7 +6,7 @@ import { trpc } from '../utils/trpc';
 export default function IndexPage() {
   // 💡 Tip: CMD+Click (or CTRL+Click) on `greeting` to go to the server definition
   const result = trpc.greeting.useQuery({ name: 'you....' });
-  const otp = trpc.getUser.useQuery();
+  const otp = trpc.getOTP.useQuery();
   console.log(JSON.stringify(otp.data));
 
   if (!result.data) {

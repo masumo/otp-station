@@ -50,13 +50,27 @@ async function run() {
     
     const emails = await imap.fetchEmails(criteria);
     for (let email of emails){
-        let otp = matchOTP(email);
-        console.log("OTP "+otp);
-        OTPcodes.push(otp);
+        let otp = null;
+        mailParser.simpleParser(email.body, async (err, parsed) => {
+          //const {from, subject, textAsHtml, text} = parsed;
+          //console.log("EMAIL judul "+parsed);
+          
+          otp = matchOTP(parsed.text);
+          console.log("OTP "+ otp);
+          OTPcodes.push(otp);
+
+          //console.log(JSON.stringify(parsed));
+          /* Make API call to save the data
+            Save the retrieved data into a database.
+            E.t.c
+          */
+        //console.log(err);
+        });
     }
 
-    logger.info(emails);
+    //logger.info(emails);
 
+    /*
     for (const email of emails) {
         for (const file of email.files) {
             const lines = Buffer.from(file.buffer).toString().split('\n');
@@ -64,12 +78,13 @@ async function run() {
         }
         logger.info(email.body.split('\n'), 'body:');
     }
+    */
     await imap.end();
 }
 
 function matchOTP(email: any){
-  let text = email.body;
-  let match = text.match("\\b[a-zA-z]*[0-9]+[a-zA-z0-9]*\\b");
+  const regex = /\b(?![A-Z]{5}\b)[A-Z0-9]{5}\b/;
+  const match = email.match(regex);
   return match && match[0];
 }
 
@@ -91,8 +106,8 @@ function parseOTP(email: any) {
 }
 
 async function parseEmails(){
-    run().then(() => {
-        process.exit();
+    await run().then(() => {
+      //process.exit();
     }).catch((error) => {
         logger.error(error);
         process.exit(1);
@@ -100,6 +115,7 @@ async function parseEmails(){
 }
 
 function getOTPcodes(){
+  console.log("Array of OTP "+JSON.stringify(OTPcodes));
   return OTPcodes;
 }
 
@@ -120,7 +136,7 @@ const appRouter = router({
       };
     }),
   // 💡 Tip: Try adding a new procedure here and see if you can use it in the client!
-   getUser: publicProcedure.query(async () => {
+   getOTP: publicProcedure.query(async () => {
     /*let output = parseEmails().then(() => {
       getOTPcodes();
     });
