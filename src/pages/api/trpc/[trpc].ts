@@ -5,10 +5,8 @@
 import * as trpcNext from '@trpc/server/adapters/next';
 import { publicProcedure, router } from '../../../server/trpc';
 import { z } from 'zod';
-import Imap from 'imap';
 import * as mailParser from 'mailparser';
 import * as dotenv from 'dotenv';
-import * as fs from 'fs';
 import MyImap from '../../../utils/my-imap';
 import { parse } from 'path';
 const logger = require('pino')({
@@ -24,6 +22,7 @@ const logger = require('pino')({
 dotenv.config();
 
 let OTPcodes: (string | null)[] = [];
+let otp: string | null = null;
 
 async function run() {
     const config = {
@@ -50,21 +49,14 @@ async function run() {
     
     const emails = await imap.fetchEmails(criteria);
     for (let email of emails){
-        let otp = null;
-        mailParser.simpleParser(email.body, async (err, parsed) => {
-          //const {from, subject, textAsHtml, text} = parsed;
-          //console.log("EMAIL judul "+parsed);
-          
+        //let otp = null;
+        mailParser.simpleParser(email.body, async (err, parsed) => {          
           otp = matchOTP(parsed.text);
+          //otp = matchOTP(email.body);
           console.log("OTP "+ otp);
           OTPcodes.push(otp);
-
-          //console.log(JSON.stringify(parsed));
-          /* Make API call to save the data
-            Save the retrieved data into a database.
-            E.t.c
-          */
-        //console.log(err);
+          OTPcodes = OTPcodes;
+          console.log(err);
         });
     }
 
@@ -80,6 +72,7 @@ async function run() {
     }
     */
     await imap.end();
+    return OTPcodes;
 }
 
 function matchOTP(email: any){
@@ -88,25 +81,8 @@ function matchOTP(email: any){
   return match && match[0];
 }
 
-function parseOTP(email: any) {
-  let otpKeyPhrase = "Steam login credentials:";
-  let otpKeyPhrase_B = "Guard code you need to access your account:";
-  const otpLength = 5; //panjang "FC6JB"
-  //console.log(parsedText);
-  let pos = email.body.indexOf(otpKeyPhrase);
-  if(pos!=-1){ //jika otpKeyPhrase ditemukan
-    pos = pos + otpKeyPhrase.length + 6; // 6 adalah jumlah spaces (termasuk newline) antara otpKeyPhrase dengan kode_OTP   
-  }else if(pos==-1){ //jika otpKeyPhrase tidak ditemukan, cari otpKeyPhrase_B
-    pos = email.body.indexOf(otpKeyPhrase_B);
-    pos = pos + otpKeyPhrase_B.length + 6;
-  }
-  //console.log("POSITION "+pos);
-  let otp = email.body.substring(pos, pos + otpLength);
-  return otp;
-}
-
 async function parseEmails(){
-    await run().then(() => {
+  run().then(() => {
       //process.exit();
     }).catch((error) => {
         logger.error(error);
@@ -116,7 +92,7 @@ async function parseEmails(){
 
 function getOTPcodes(){
   console.log("Array of OTP "+JSON.stringify(OTPcodes));
-  return OTPcodes;
+  return otp;
 }
 
 const appRouter = router({
@@ -137,13 +113,17 @@ const appRouter = router({
     }),
   // 💡 Tip: Try adding a new procedure here and see if you can use it in the client!
    getOTP: publicProcedure.query(async () => {
-    /*let output = parseEmails().then(() => {
-      getOTPcodes();
-    });
-    */
-    await parseEmails();
-    let output = getOTPcodes();
-    return output;
+      let output = null;
+      OTPcodes = [];
+        try{
+          output = await run()
+        }
+        catch(err){
+          logger.error(err);
+          process.exit(1);
+        }
+        //let output = getOTPcodes();
+        return output;
   }),
 });
 
