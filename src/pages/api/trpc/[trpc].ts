@@ -9,7 +9,8 @@ import * as mailParser from 'mailparser';
 import * as dotenv from 'dotenv';
 import MyImap from '../../../utils/my-imap';
 import { parse } from 'path';
-const logger = require('pino')({
+
+/*const logger = require('pino')({
   transport: {
       target: 'pino-pretty',
       options: {
@@ -19,6 +20,14 @@ const logger = require('pino')({
       },
   },
 });
+*/
+const pino = require('pino')
+const pretty = require('pino-pretty')
+const stream = pretty({
+  colorize: true
+})
+const logger = pino({ level: 'info' }, stream)
+
 dotenv.config();
 
 let OTPcodes: (string | null)[] = [];
