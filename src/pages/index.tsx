@@ -9,11 +9,7 @@ import { Button, Typography } from "@material-tailwind/react";
 export default function IndexPage() {
   //const [data, setData] = React.useState(null);
   const [isWaiting, setWaiting] = React.useState(false);
-  const emulateFetch = _ => {
-    return new Promise(resolve => {
-      resolve([{ data: "ok" }]);
-    });
-  };
+  
   const {isLoading, error, data, refetch } = trpc.getOTP.useQuery(
                                                 undefined, 
                                                 {
