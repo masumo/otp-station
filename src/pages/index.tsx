@@ -7,6 +7,7 @@ import { trpc } from '../utils/trpc';
 import { Button, Typography, Spinner, Alert } from "@material-tailwind/react";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
+import {LoginButton} from "../components/LoginButton";
 
 export default function IndexPage() {
   
@@ -26,6 +27,7 @@ export default function IndexPage() {
            * 💡 Tip: CMD+Click (or CTRL+Click) on `text` to go to the server definition
            * 💡 Tip: Secondary click on `text` and "Rename Symbol" to rename it both on the client & server
            */}
+           <LoginButton></LoginButton>
           <Button className="mb-4" onClick={ ()=> refetch()}>
             Display OTP
           </Button>
