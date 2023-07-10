@@ -5,22 +5,12 @@
 import * as trpcNext from '@trpc/server/adapters/next';
 import { publicProcedure, router } from '../../../server/trpc';
 import { z } from 'zod';
+import { Context } from "../../../server/context";
 import * as mailParser from 'mailparser';
 import * as dotenv from 'dotenv';
 import MyImap from '../../../utils/my-imap';
 import { parse } from 'path';
 
-/*const logger = require('pino')({
-  transport: {
-      target: 'pino-pretty',
-      options: {
-          translateTime: false,
-          colorize: true,
-          ignore: 'pid,hostname,time',
-      },
-  },
-});
-*/
 const pino = require('pino')
 const pretty = require('pino-pretty')
 const stream = pretty({
