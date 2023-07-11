@@ -7,7 +7,6 @@ import { trpc } from '../utils/trpc';
 import { Button, Typography, Spinner, Alert } from "@material-tailwind/react";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
-import {LoginButton} from "../components/LoginButton";
 
 export default function IndexPage() {
   
@@ -19,6 +18,8 @@ export default function IndexPage() {
 
   // 💡 Tip: CMD+Click (or CTRL+Click) on `greeting` to go to the server definition
   //const result = trpc.greeting.useQuery({ name: 'you....' });
+  const result = trpc.findAll.useQuery();
+  console.log("FIND ALL"+ JSON.stringify(result.data));
   return (
           <div className="h-screen flex flex-col justify-center items-center ">
           {/**
@@ -27,7 +28,6 @@ export default function IndexPage() {
            * 💡 Tip: CMD+Click (or CTRL+Click) on `text` to go to the server definition
            * 💡 Tip: Secondary click on `text` and "Rename Symbol" to rename it both on the client & server
            */}
-           <LoginButton></LoginButton>
           <Button className="mb-4" onClick={ ()=> refetch()}>
             Display OTP
           </Button>

@@ -3,13 +3,12 @@
  * On a bigger app, you will probably want to split this file up into multiple files.
  */
 import * as trpcNext from '@trpc/server/adapters/next';
-import { publicProcedure, router } from '../../../server/trpc';
+import { publicProcedure, mergeRouters, router } from '../../../server/trpc';
 import { z } from 'zod';
-import { Context } from "../../../server/context";
 import * as mailParser from 'mailparser';
 import * as dotenv from 'dotenv';
 import MyImap from '../../../utils/my-imap';
-import { parse } from 'path';
+import { serverRouter } from '../../../server/serverRouter';
 
 const pino = require('pino')
 const pretty = require('pino-pretty')
@@ -94,7 +93,7 @@ function getOTPcodes(){
   return otp;
 }
 
-const appRouter = router({
+const otpRouter = router({
   greeting: publicProcedure
     // This is the input schema of your procedure
     // 💡 Tip: Try changing this and see type errors on the client straight away
@@ -128,6 +127,7 @@ const appRouter = router({
 
 // export only the type definition of the API
 // None of the actual implementation is exposed to the client
+const appRouter = mergeRouters(otpRouter, serverRouter);
 export type AppRouter = typeof appRouter;
 
 // export API handler
