@@ -1,6 +1,10 @@
 import React, { memo } from "react";
 import  type { NextPage } from "next";
 import { CustomerList } from "@prisma/client";
+import ListItemIcon from '@mui/material/ListItemIcon';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+
 
 interface CardProps {
   children: React.ReactNode;
@@ -61,9 +65,10 @@ export const List: NextPage<CardProps> = ({ children }) => {
 interface ListItemProps {
   item: CustomerList;
   onUpdate?: (item: CustomerList) => void;
+  editTodo: (item: CustomerList) => void;
 }
 
-const ListItemComponent: NextPage<ListItemProps> = ({ item, onUpdate }) => {
+const ListItemComponent: NextPage<ListItemProps> = ({ item, onUpdate, editTodo }) => {
   return (
     <div className="h-12 border-b flex items-center justify-start px-3">
       <input
@@ -73,11 +78,48 @@ const ListItemComponent: NextPage<ListItemProps> = ({ item, onUpdate }) => {
         onChange={() => onUpdate?.(item)}
       />
       <h2 className="text-gray-600 tracking-wide text-sm">{item.account}</h2>
+      <ListItemIcon>
+          <IconButton
+              edge="end"
+              aria-label="edit"
+              onClick={() => editTodo(item)}
+          >
+              <EditIcon/>
+          </IconButton>
+      </ListItemIcon>
     </div>
   );
 };
 
 export const ListItem = memo(ListItemComponent);
+
+
+const ListItemEditingComponent: NextPage<ListItemProps> = ({ item, onUpdate, editTodo }) => {
+  return (
+    <div className="h-12 border-b flex items-center justify-start px-3">
+      <input
+        type="checkbox"
+        className="w-4 h-4 border-gray-300 rounded mr-4"
+        defaultChecked={item['checked'] as boolean}
+        onChange={() => onUpdate?.(item)}
+      />
+      <input 
+        type="text"
+        value="edit" />
+      <ListItemIcon>
+          <IconButton
+              edge="end"
+              aria-label="edit"
+              onClick={() => editTodo(item)}
+          >
+              <EditIcon/>
+          </IconButton>
+      </ListItemIcon>
+    </div>
+  );
+};
+
+export const ListItemEditing = memo(ListItemEditingComponent);
 
 interface CardFormProps {
   value: string;

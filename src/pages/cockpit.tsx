@@ -11,11 +11,13 @@ import {
   CardHeader,
   List,
   ListItem,
+  ListItemEditing,
 } from "../components";
 import { CustomerList } from "@prisma/client";
 
 const Home: NextPage = () => {
   const [itemName, setItemName] = useState<string>("");
+  const [isEditing, setIsEditing] = useState(false);
 
   const { data: list, refetch } = trpc.findAll.useQuery();
   const insertMutation = trpc.insertOne.useMutation( {
@@ -56,6 +58,23 @@ const Home: NextPage = () => {
     [updateOneMutation]
   );
 
+  const editTodo = useCallback(
+    (item: CustomerList) => {
+      updateOneMutation.mutate({
+        ...item,
+        checked: !item.checked,
+      });
+    },
+    [updateOneMutation]
+  );
+
+  function handleEditClick() {
+    // set editing to true
+    setIsEditing(true);
+    // set the currentTodo to the todo item that was clicked
+    //setCurrentTodo({ ...todo });
+  }
+
   return (
     <>
       <Head>
@@ -75,7 +94,10 @@ const Home: NextPage = () => {
             />
             <List>
               {list?.map((item) => (
-                <ListItem key={item.id} item={item} onUpdate={updateOne} />
+                !isEditing?
+                <ListItem key={item.id} item={item} onUpdate={updateOne} editTodo={handleEditClick} />
+                :
+                <ListItemEditing key={item.id} item={item} onUpdate={updateOne} editTodo={handleEditClick} />
               ))}
             </List>
           </CardContent>

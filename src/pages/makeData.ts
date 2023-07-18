@@ -1,4 +1,14 @@
-import { Person } from './TS';
+
+
+type Person = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  age: number;
+  state: string;
+};
+
 
 export const data: Person[] = [
   {
