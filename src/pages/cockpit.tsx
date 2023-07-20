@@ -17,6 +17,7 @@ import { CustomerList } from "@prisma/client";
 
 const Home: NextPage = () => {
   const [itemName, setItemName] = useState<string>("");
+  const [accountEdit, setAccountEdit] = useState<string>("");
   const [isEditing, setIsEditing] = useState(false);
 
   const { data: list, refetch } = trpc.findAll.useQuery();
@@ -73,7 +74,32 @@ const Home: NextPage = () => {
     setIsEditing(true);
     // set the currentTodo to the todo item that was clicked
     //setCurrentTodo({ ...todo });
-  }
+  };
+
+  function handleCancelEdit() {
+    // set editing to true
+    setIsEditing(false);
+  };
+
+  const setCustomerAccount = useCallback(
+    (account: string) => {
+      setAccountEdit(account)
+    },
+    [updateOneMutation]
+  );
+  
+  const editCustAccount = useCallback(
+    (custId: string) => {
+      if (accountEdit === "") return;
+      updateOneMutation.mutate({
+        account: accountEdit,
+        id: custId,
+        checked: false,
+      });
+      setIsEditing(false);
+    },
+    [updateOneMutation]
+  );
 
   return (
     <>
@@ -97,7 +123,7 @@ const Home: NextPage = () => {
                 !isEditing?
                 <ListItem key={item.id} item={item} onUpdate={updateOne} editTodo={handleEditClick} />
                 :
-                <ListItemEditing key={item.id} item={item} onUpdate={updateOne} editTodo={handleEditClick} />
+                <ListItemEditing key={item.id} item={item} onUpdate={updateOne} editTodo={handleEditClick} cancelEdit={handleCancelEdit} handleCustomerChange={setCustomerAccount} saveEdit={editCustAccount} />
               ))}
             </List>
           </CardContent>

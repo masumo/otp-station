@@ -12,6 +12,6 @@ datasource db {
 
 model CustomerList {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  account   String?  @unique
-  checked Boolean? @default(false)
+  account   String  @unique
+  checked Boolean @default(false)
 }

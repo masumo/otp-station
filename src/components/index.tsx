@@ -4,6 +4,8 @@ import { CustomerList } from "@prisma/client";
 import ListItemIcon from '@mui/material/ListItemIcon';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
 interface CardProps {
@@ -86,6 +88,7 @@ const ListItemComponent: NextPage<ListItemProps> = ({ item, onUpdate, editTodo }
           >
               <EditIcon/>
           </IconButton>
+          <DeleteIcon/>
       </ListItemIcon>
     </div>
   );
@@ -93,8 +96,16 @@ const ListItemComponent: NextPage<ListItemProps> = ({ item, onUpdate, editTodo }
 
 export const ListItem = memo(ListItemComponent);
 
+interface ListItemEditingProps {
+  item: CustomerList;
+  onUpdate?: (item: CustomerList) => void;
+  editTodo: (item: CustomerList) => void;
+  cancelEdit: () => void;
+  handleCustomerChange: (account: string) => void;
+  saveEdit: ( id:string) => void;
+}
 
-const ListItemEditingComponent: NextPage<ListItemProps> = ({ item, onUpdate, editTodo }) => {
+const ListItemEditingComponent: NextPage<ListItemEditingProps> = ({ item, onUpdate, editTodo, cancelEdit, handleCustomerChange, saveEdit }) => {
   return (
     <div className="h-12 border-b flex items-center justify-start px-3">
       <input
@@ -105,15 +116,18 @@ const ListItemEditingComponent: NextPage<ListItemProps> = ({ item, onUpdate, edi
       />
       <input 
         type="text"
-        value="edit" />
+        defaultValue={item.account}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleCustomerChange?.(e.target.value)} 
+      />
       <ListItemIcon>
           <IconButton
               edge="end"
               aria-label="edit"
-              onClick={() => editTodo(item)}
+              onClick={() => saveEdit(item.id)}
           >
-              <EditIcon/>
+          <SaveIcon/>
           </IconButton>
+          <button onClick={() => cancelEdit()}>Cancel</button>
       </ListItemIcon>
     </div>
   );
@@ -138,7 +152,7 @@ export const CardForm: NextPage<CardFormProps> = ({
         <input
           className="w-full py-4 pl-3 pr-16 text-sm rounded-lg"
           type="text"
-          placeholder="Grocery item name..."
+          placeholder="Customer account..."
           onChange={onChange}
           value={value}
         />

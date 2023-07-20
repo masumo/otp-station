@@ -25,7 +25,7 @@ export const serverRouter = router({
                 .input( 
                     z.object({
                     id: z.string(),
-                    account: z.string().nullable(),
+                    account: z.string(),
                     checked: z.boolean(),
                     })
                 )
