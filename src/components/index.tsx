@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 
 interface CardProps {
@@ -86,9 +87,14 @@ const ListItemComponent: NextPage<ListItemProps> = ({ item, onUpdate, editTodo }
               aria-label="edit"
               onClick={() => editTodo(item)}
           >
-              <EditIcon/>
+            <EditIcon/>
           </IconButton>
-          <DeleteIcon/>
+          <IconButton
+              edge="end"
+              aria-label="delete"
+          >
+            <DeleteIcon/>
+          </IconButton>
       </ListItemIcon>
     </div>
   );
@@ -125,9 +131,15 @@ const ListItemEditingComponent: NextPage<ListItemEditingProps> = ({ item, onUpda
               aria-label="edit"
               onClick={() => saveEdit(item.id)}
           >
-          <SaveIcon/>
+            <SaveIcon/>
           </IconButton>
-          <button onClick={() => cancelEdit()}>Cancel</button>
+          <IconButton
+              edge="end"
+              aria-label="edit"
+              onClick={() => cancelEdit()}
+          >
+            <CancelIcon/>
+          </IconButton>
       </ListItemIcon>
     </div>
   );
