@@ -36,6 +36,20 @@ export const serverRouter = router({
                         data: { ...rest },
                     });
                 }),
+    deleteOne: publicProcedure
+                .input( 
+                    z.object({
+                    id: z.string(),
+                    account: z.string(),
+                    checked: z.boolean(),
+                    })
+                )
+                .mutation( async ({ input }) => {
+                        const { id, ...rest } = input;
+                        return await prisma.customerList.delete({
+                        where: { id },
+                    });
+                }),
     deleteAll: publicProcedure
                 .input(
                     z.object({

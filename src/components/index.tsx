@@ -55,7 +55,7 @@ export const CardHeader: NextPage<CardHeaderProps> = ({
         type="button"
         onClick={clearAllFn}
       >
-        Clear all
+        Delete all
       </button>
     </div>
   );
@@ -69,9 +69,10 @@ interface ListItemProps {
   item: CustomerList;
   onUpdate?: (item: CustomerList) => void;
   editTodo: (item: CustomerList) => void;
+  deleteTodo: (item: CustomerList) => void;
 }
 
-const ListItemComponent: NextPage<ListItemProps> = ({ item, onUpdate, editTodo }) => {
+const ListItemComponent: NextPage<ListItemProps> = ({ item, onUpdate, editTodo, deleteTodo }) => {
   return (
     <div className="h-12 border-b flex items-center justify-start px-3">
       <input
@@ -92,6 +93,7 @@ const ListItemComponent: NextPage<ListItemProps> = ({ item, onUpdate, editTodo }
           <IconButton
               edge="end"
               aria-label="delete"
+              onClick={() => deleteTodo(item)}
           >
             <DeleteIcon/>
           </IconButton>

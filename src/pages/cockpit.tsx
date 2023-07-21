@@ -31,6 +31,9 @@ const Home: NextPage = () => {
   const updateOneMutation = trpc.updateOne.useMutation( {
     onSuccess: () => refetch(),
   });
+  const deleteOneMutation = trpc.deleteOne.useMutation( {
+    onSuccess: () => refetch(),
+  });
 
   const insertOne = useCallback(() => {
     if (itemName === "") return;
@@ -44,9 +47,12 @@ const Home: NextPage = () => {
 
   const clearAll = useCallback(() => {
     if (list?.length) {
-      deleteAllMutation.mutate({
-        ids: list.map((item) => item.id),
-      });
+      let text = "Do you want to delete ALL items?";
+      if (window.confirm(text) == true) {
+        deleteAllMutation.mutate({
+          ids: list.map((item) => item.id),
+        });
+      }
     }
   }, [list, deleteAllMutation]);
 
@@ -76,6 +82,20 @@ const Home: NextPage = () => {
       setIdToEdit(item.id);
     },
     [updateOneMutation]
+  );
+
+  const handleDeleteClick = useCallback(
+    (item: CustomerList) => {
+      let text = "Do you want to delete this item?";
+      if (window.confirm(text) == true) {
+        deleteOneMutation.mutate({
+          ...item,
+          id: item.id,
+        });
+      }else return;
+      
+    },
+    [deleteOneMutation]
   );
 
   function handleCancelEdit() {
@@ -123,7 +143,7 @@ const Home: NextPage = () => {
             <List>
               {list?.map((item) => (
                 !(isEditing&&item.id===idToEdit)?
-                <ListItem key={item.id} item={item} onUpdate={updateOne} editTodo={handleEditClick} />
+                <ListItem key={item.id} item={item} onUpdate={updateOne} editTodo={handleEditClick} deleteTodo={handleDeleteClick} />
                 :
                 <ListItemEditing key={item.id} item={item} onUpdate={updateOne} editTodo={handleEditClick} cancelEdit={handleCancelEdit} handleCustomerChange={setCustomerAccount} saveEdit={editCustAccount} />
               ))}
