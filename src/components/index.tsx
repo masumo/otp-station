@@ -23,7 +23,7 @@ export const Card: NextPage<CardProps> = ({ children }) => {
 
 export const CardContent: NextPage<CardProps> = ({ children }) => {
   return (
-    <div className="bg-white w-5/6 md:w-4/6 lg:w-3/6 xl:w-2/6 rounded-lg drop-shadow-md">
+    <div className="bg-white w-5/6 md:w-4/6 lg:w-3/6 xl:w-6/12 rounded-lg drop-shadow-md">
       {children}
     </div>
   );
@@ -32,13 +32,15 @@ export const CardContent: NextPage<CardProps> = ({ children }) => {
 interface CardHeaderProps {
   title: string;
   listLength: number;
-  clearAllFn?: () => void;
+  deleteAllFn?: () => void;
+  deleteSomeFn?: () => void;
 }
 
 export const CardHeader: NextPage<CardHeaderProps> = ({
   title,
   listLength,
-  clearAllFn,
+  deleteAllFn,
+  deleteSomeFn,
 }) => {
   return (
     <div className="flex flex-row items-center justify-between p-3 border-b border-slate-200">
@@ -53,16 +55,23 @@ export const CardHeader: NextPage<CardHeaderProps> = ({
       <button
         className="text-sm font-medium text-gray-600 underline"
         type="button"
-        onClick={clearAllFn}
+        onClick={deleteSomeFn}
       >
-        Delete all
+        DELETE
+      </button>
+      <button
+        className="text-sm font-medium text-gray-600 underline"
+        type="button"
+        onClick={deleteAllFn}
+      >
+        DELETE ALL
       </button>
     </div>
   );
 };
 
 export const List: NextPage<CardProps> = ({ children }) => {
-  return <div className="overflow-y-auto h-72">{children}</div>;
+  return <div className="overflow-y-auto h-80">{children}</div>;
 };
 
 interface ListItemProps {
@@ -166,7 +175,7 @@ export const CardForm: NextPage<CardFormProps> = ({
         <input
           className="w-full py-4 pl-3 pr-16 text-sm rounded-lg"
           type="text"
-          placeholder="Customer account..."
+          placeholder="Add customer account..."
           onChange={onChange}
           value={value}
         />
