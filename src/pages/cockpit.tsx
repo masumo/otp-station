@@ -155,7 +155,7 @@ const Home: NextPage = () => {
     <>
       <div className="flex flex-col">
         <Typography color="blue-gray" className="font-normal">
-            Signed in as {session.user.email} <br />
+            Signed in as {session?.user?.email} <br />
           <button onClick={() => signOut()}>Sign out</button>
         </Typography>
       </div>
