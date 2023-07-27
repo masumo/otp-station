@@ -98,7 +98,7 @@ const Home: NextPage = () => {
       setIsEditing(true);
       setIdToEdit(item.id);
     },
-    [updateOneMutation]
+    []
   );
 
   const handleDeleteClick = useCallback(
@@ -124,7 +124,7 @@ const Home: NextPage = () => {
     (account: string) => {
       setAccountEdit(account)
     },
-    [updateOneMutation]
+    []
   );
   
   const editCustAccount = useCallback(
@@ -137,14 +137,14 @@ const Home: NextPage = () => {
       });
       setIsEditing(false);
     },
-    [updateOneMutation]
+    [updateOneMutation, accountEdit]
   );
 
   if (!session){
     return (
       <div className="h-screen flex flex-col justify-center items-center ">
         <Typography color="blue-gray" className="mb-4 font-normal">
-            You're not signed in <br />
+            Not signed in <br />
         </Typography>
         <Button onClick={() => signIn()}>Sign in</Button>
       </div>
