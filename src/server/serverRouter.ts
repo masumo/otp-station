@@ -10,6 +10,19 @@ export const serverRouter = router({
     findAll: publicProcedure.query( async () => {
                 return await prisma.customerList.findMany();
             }),
+    findFirst: publicProcedure
+                .input(
+                    z.object({
+                    account: z.string(),
+                    })
+                )
+                .query( async ({input}) => {
+                    return await prisma.customerList.findFirst({
+                        where: {
+                            account: input.account,
+                          },
+                    });
+                }),
     insertOne: publicProcedure
                 .input(
                     z.object({

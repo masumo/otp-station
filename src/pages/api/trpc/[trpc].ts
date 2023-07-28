@@ -9,6 +9,7 @@ import * as mailParser from 'mailparser';
 import * as dotenv from 'dotenv';
 import MyImap from '../../../utils/my-imap';
 import { serverRouter } from '../../../server/serverRouter';
+import { trpc } from '@/utils/trpc';
 
 const pino = require('pino')
 const pretty = require('pino-pretty')
@@ -22,7 +23,9 @@ dotenv.config();
 let OTPcodes: (string | null)[] = [];
 let otp: string | null = null;
 
-async function run() {
+async function run(username:any) {
+  const user = trpc.findFirst.useQuery({account:username});
+  if(user?.data?.account) console.log("USERNAME "+user.toString());
     const config = {
         imap: {
             user: process.env.NEXT_PUBLIC_YMAIL_USER,
@@ -79,14 +82,14 @@ function matchOTP(email: any){
   return match && match[0];
 }
 
-async function parseEmails(){
+/*async function parseEmails(){
   run().then(() => {
       //process.exit();
     }).catch((error) => {
         logger.error(error);
         process.exit(1);
     });
-}
+}*/
 
 function getOTPcodes(){
   console.log("Array of OTP "+JSON.stringify(OTPcodes));
@@ -110,19 +113,29 @@ const otpRouter = router({
       };
     }),
   // 💡 Tip: Try adding a new procedure here and see if you can use it in the client!
-   getOTP: publicProcedure.query(async () => {
-      let output = null;
-      OTPcodes = [];
-        try{
-          output = await run()
-        }
-        catch(err){
-          logger.error(err);
-          process.exit(1);
-        }
-        //let output = getOTPcodes();
-        return output;
-  }),
+   getOTP: publicProcedure
+      .input(
+        z.object({
+          username: z.string().nullish(),
+        }),
+      )
+      .query(async ({ input }) => {
+          let output = null;
+          OTPcodes = [];
+          console.log("Input "+input?.username);
+          let customerUsername = input?.username;
+          //const user = trpc.findFirst.useQuery({account:customerUsername??""});
+          //console.log("USER "+user.toString());
+            try{
+              output = await run(customerUsername)
+            }
+            catch(err){
+              logger.error(err);
+              process.exit(1);
+            }
+            //let output = getOTPcodes();
+            return output;
+      }),
 });
 
 // export only the type definition of the API

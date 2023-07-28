@@ -4,22 +4,23 @@
 "use client";
 import * as React from 'react';
 import { trpc } from '../utils/trpc';
-import { Button, Typography, Spinner, Alert } from "@material-tailwind/react";
+import { Button, Input, Typography, Spinner, Alert } from "@material-tailwind/react";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 
 export default function IndexPage() {
-  
+  const [customer, setCustomer] = React.useState<string>("");
   const {isFetching, error, data, refetch } = trpc.getOTP.useQuery(
-                                                undefined, 
-                                                {
-                                                  refetchOnWindowFocus: false, enabled: false,
-                                                });
-
+          { username: customer }, 
+          {
+            refetchOnWindowFocus: false, enabled: false,
+          });
+          const user = trpc.findFirst.useQuery({account:"kosumo"});
+          if(user?.data?.account) console.log("USER "+user.data?.account.toString());
   // 💡 Tip: CMD+Click (or CTRL+Click) on `greeting` to go to the server definition
   //const result = trpc.greeting.useQuery({ name: 'you....' });
-  const result = trpc.findAll.useQuery();
-  console.log("FIND ALL"+ JSON.stringify(result.data));
+  //const result = trpc.findAll.useQuery();
+  //console.log("FIND ALL"+ JSON.stringify(result.data));
   return (
           <div className="h-screen flex flex-col justify-center items-center ">
           {/**
@@ -28,7 +29,15 @@ export default function IndexPage() {
            * 💡 Tip: CMD+Click (or CTRL+Click) on `text` to go to the server definition
            * 💡 Tip: Secondary click on `text` and "Rename Symbol" to rename it both on the client & server
            */}
-          <Button className="mb-4" onClick={ ()=> refetch()}>
+          <div className="w-72 mb-6">
+              <Input 
+                label="shopee-username" 
+                name="customer"
+                value={customer}
+                onInput={e => setCustomer(e.currentTarget.value)} />
+          </div>
+          
+          <Button className="mb-4" onClick={ ()=>refetch()}>
             Display OTP
           </Button>
           { 
