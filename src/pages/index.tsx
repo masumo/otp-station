@@ -15,8 +15,6 @@ export default function IndexPage() {
           {
             refetchOnWindowFocus: false, enabled: false,
           });
-          const user = trpc.findFirst.useQuery({account:"kosumo"});
-          if(user?.data?.account) console.log("USER "+user.data?.account.toString());
   // 💡 Tip: CMD+Click (or CTRL+Click) on `greeting` to go to the server definition
   //const result = trpc.greeting.useQuery({ name: 'you....' });
   //const result = trpc.findAll.useQuery();

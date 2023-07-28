@@ -10,6 +10,9 @@ import * as dotenv from 'dotenv';
 import MyImap from '../../../utils/my-imap';
 import { serverRouter } from '../../../server/serverRouter';
 import { trpc } from '@/utils/trpc';
+import { Prisma, PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const pino = require('pino')
 const pretty = require('pino-pretty')
@@ -23,9 +26,7 @@ dotenv.config();
 let OTPcodes: (string | null)[] = [];
 let otp: string | null = null;
 
-async function run(username:any) {
-  const user = trpc.findFirst.useQuery({account:username});
-  if(user?.data?.account) console.log("USERNAME "+user.toString());
+async function run() {
     const config = {
         imap: {
             user: process.env.NEXT_PUBLIC_YMAIL_USER,
@@ -96,6 +97,17 @@ function getOTPcodes(){
   return otp;
 }
 
+async function checkAccountExist(username:any){
+    let exist = false;
+    let customer = await prisma.customerList.findFirst({
+        where: {
+            account: username,
+          },
+    });
+    if(customer?.account) exist = true;
+    return exist; 
+}
+
 const otpRouter = router({
   greeting: publicProcedure
     // This is the input schema of your procedure
@@ -124,17 +136,20 @@ const otpRouter = router({
           OTPcodes = [];
           console.log("Input "+input?.username);
           let customerUsername = input?.username;
-          //const user = trpc.findFirst.useQuery({account:customerUsername??""});
-          //console.log("USER "+user.toString());
+          const exist = await checkAccountExist(customerUsername);
+          if(exist){
             try{
-              output = await run(customerUsername)
+              output = await run()
             }
             catch(err){
               logger.error(err);
               process.exit(1);
             }
-            //let output = getOTPcodes();
             return output;
+          }
+          else if(!exist) return "You're not the customer, please register first";
+            //let output = getOTPcodes();
+            
       }),
 });
 
