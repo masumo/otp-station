@@ -9,8 +9,8 @@ import * as mailParser from 'mailparser';
 import * as dotenv from 'dotenv';
 import MyImap from '../../../utils/my-imap';
 import { serverRouter } from '../../../server/serverRouter';
-import { trpc } from '@/utils/trpc';
 import { Prisma, PrismaClient } from "@prisma/client";
+import { TRPCError } from '@trpc/server';
 
 const prisma = new PrismaClient();
 
@@ -46,6 +46,8 @@ async function run() {
 
     const criteria = [];
     //criteria.push('UNSEEN');
+    //criteria.push('-ARRIVAL');  //get the latest email
+    //criteria.push('NEW');
     //criteria.push(['SINCE', moment().format('MMMM DD, YYYY')]);
     criteria.push(['HEADER', 'SUBJECT', 'Steam Account']);
     
@@ -60,6 +62,7 @@ async function run() {
           OTPcodes = OTPcodes;
           console.log(err);
         });
+        
     }
 
     //logger.info(emails);
@@ -147,8 +150,11 @@ const otpRouter = router({
             }
             return output;
           }
-          else if(!exist) return "You're not the customer, please register first";
-            //let output = getOTPcodes();
+          else if(!exist)  throw new TRPCError({
+              code: 'UNAUTHORIZED',
+              message: 'Mohon maaf Anda bukan pengguna layanan ini. Silakan beli paket terlebih dahulu 🙏',
+            })
+          //let output = getOTPcodes();
             
       }),
 });

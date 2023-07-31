@@ -137,6 +137,11 @@ class MyImap {
             });
             msg.once('attributes', function(attrs) {
                 email.uid = attrs.uid;
+                /*this.imap.addFlags(email.uid, ['\\Seen'], () => {
+                    // Mark the email as read after reading it
+                    this._log('Marked as read!');
+                  });
+                */
             });
             msg.once('end', () => {
                 this._log(`Finished msg ${seqno}`);

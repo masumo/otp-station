@@ -73,7 +73,7 @@ export default function IndexPage() {
                   Error
                 </Typography>
                 <Typography color="white" className="mt-2 font-normal">
-                  {error.data} <br/> {error.message}
+                  {error.message}
                 </Typography>
               </Alert>
               : <p></p>
