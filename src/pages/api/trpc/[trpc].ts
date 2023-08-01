@@ -49,33 +49,24 @@ async function run() {
     //criteria.push('-ARRIVAL');  //get the latest email
     //criteria.push('NEW');
     //criteria.push(['SINCE', moment().format('MMMM DD, YYYY')]);
-    criteria.push(['HEADER', 'SUBJECT', 'Steam Account']);
+    criteria.push(['UNSEEN'],['HEADER', 'SUBJECT', 'Steam Account']);
     
     const emails = await imap.fetchEmails(criteria);
-    for (let email of emails){
-        //let otp = null;
-        mailParser.simpleParser(email.body, async (err, parsed) => {          
-          otp = matchOTP(parsed.text);
-          //otp = matchOTP(email.body);
-          console.log("OTP "+ otp);
-          OTPcodes.push(otp);
-          OTPcodes = OTPcodes;
-          console.log(err);
-        });
-        
+    //if(OTPcodes.length) console.log("OTP CODE length "+OTPcodes.length);
+    OTPcodes = [];
+    if(emails.length){
+        for (let email of emails){
+          //let otp = null;
+          mailParser.simpleParser(email.body, async (err, parsed) => {          
+            otp = matchOTP(parsed.text);
+            //otp = matchOTP(email.body);
+            console.log("OTP "+ otp);
+            OTPcodes.push(otp);
+            OTPcodes = OTPcodes;
+            console.log(err);
+          });    
+      }
     }
-
-    //logger.info(emails);
-
-    /*
-    for (const email of emails) {
-        for (const file of email.files) {
-            const lines = Buffer.from(file.buffer).toString().split('\n');
-            logger.info(lines, `filename: ${file.originalname}`);
-        }
-        logger.info(email.body.split('\n'), 'body:');
-    }
-    */
     await imap.end();
     return OTPcodes;
 }
@@ -137,7 +128,7 @@ const otpRouter = router({
       .query(async ({ input }) => {
           let output = null;
           OTPcodes = [];
-          console.log("Input "+input?.username);
+          //console.log("Input "+input?.username);
           let customerUsername = input?.username;
           const exist = await checkAccountExist(customerUsername);
           if(exist){
@@ -148,7 +139,11 @@ const otpRouter = router({
               logger.error(err);
               process.exit(1);
             }
-            return output;
+            if(output.length) return output;
+            else throw new TRPCError({
+              code: 'NOT_FOUND',
+              message: 'Mohon maaf kode OTP tidak ditemukan. Silakan hubungi admin 🙏',
+            })
           }
           else if(!exist)  throw new TRPCError({
               code: 'UNAUTHORIZED',

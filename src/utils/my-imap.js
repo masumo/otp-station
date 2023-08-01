@@ -47,22 +47,20 @@ class MyImap {
             try {
                 const emails = [];
                 const results = await this._search(criteria);
-
                 if (results.length === 0) {
                     return resolve(emails);
                 }
-
-                const fetch = this.imap.fetch(results, {
-                    bodies: '',
+                const fetch = this.imap.fetch(results[0], { // cuma hasil pencarian pertama yg diambil
+                    bodies: '', markSeen: true   // hasil pencarian, setelah dibaca, ditandai sudah dibaca
                 });
-
+                
                 let emailsProcessed = 0;
                 fetch.on('message', async (msg, seqno) => {
                     const email = await this._processMessage(msg, seqno);
                     emails.push(email);
 
                     emailsProcessed++;
-                    if (emailsProcessed === results.length) {
+                    if (emailsProcessed === 1) { // hanya ambil hasil pencarian pertama
                         resolve(emails);
                     }
                 });
@@ -137,11 +135,6 @@ class MyImap {
             });
             msg.once('attributes', function(attrs) {
                 email.uid = attrs.uid;
-                /*this.imap.addFlags(email.uid, ['\\Seen'], () => {
-                    // Mark the email as read after reading it
-                    this._log('Marked as read!');
-                  });
-                */
             });
             msg.once('end', () => {
                 this._log(`Finished msg ${seqno}`);

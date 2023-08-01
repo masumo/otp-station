@@ -13,8 +13,9 @@ export default function IndexPage() {
   const {isFetching, error, data, refetch } = trpc.getOTP.useQuery(
           { username: customer }, 
           {
-            refetchOnWindowFocus: false, enabled: false,
+            refetchOnWindowFocus: false, enabled: false, refetchOnMount:false, cacheTime:0,
           });
+          console.log("DATA "+JSON.stringify(data));
   // 💡 Tip: CMD+Click (or CTRL+Click) on `greeting` to go to the server definition
   //const result = trpc.greeting.useQuery({ name: 'you....' });
   //const result = trpc.findAll.useQuery();
@@ -36,20 +37,20 @@ export default function IndexPage() {
           </div>
           
           <Button className="mb-4" onClick={ ()=>refetch()}>
-            Display OTP
+            Tampilkan kode OTP
           </Button>
           { 
-            !isFetching && data? 
+            !isFetching && data? // TODO: anciticapte when there is error and the data is not null (there is data in cache) example: suppose there is an email OTP code arrives. we request the OTP. the OTP showed. and then we directly request the OTP again. there should be NOT FOUND ERROR, but the OTP is still available in the data (cache)
                 <Alert
                 color="green"
                 className="max-w-screen-sm"
                 icon={<CheckCircleIcon className="mt-px h-6 w-6" />}
                 >
                 <Typography variant="h5" color="white">
-                  Success
+                  Sukses
                 </Typography>
                 <Typography color="white" className="mt-2 font-normal">
-                  Your OTP Code: {JSON.stringify(data)}
+                  Kode OTP: {data} 
                 </Typography>
               </Alert>
               : <p></p>
@@ -57,7 +58,7 @@ export default function IndexPage() {
           { 
           isFetching? 
                 <>
-                    <Typography variant="medium" color="blue-gray" className="text-center mb-4 font-medium">Checking OTP...</Typography>
+                    <Typography variant="medium" color="blue-gray" className="text-center mb-4 font-medium">Mengecek kode OTP...</Typography>
                     <Spinner className="h-10 w-10 text-blue-500/10" />
                 </>
               : <p></p>
